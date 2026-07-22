@@ -17,10 +17,12 @@ if uploaded_file:
 
     bytes_data = uploaded_file.read()
 
+
     img = np.frombuffer(
         bytes_data,
         np.uint8
     )
+
 
     img = cv2.imdecode(
         img,
@@ -36,7 +38,11 @@ if uploaded_file:
 
     if st.button("開始分析"):
 
-        with st.spinner("AI分析中..."):
+
+        with st.spinner(
+            "AI分析中..."
+        ):
+
 
             result = DeepFace.analyze(
                 img_path=img,
@@ -45,28 +51,42 @@ if uploaded_file:
                     "gender",
                     "emotion"
                 ],
-                detector_backend="mediapipe",
+                detector_backend="retinaface",
                 enforce_detection=False
             )
 
 
-        if isinstance(result, list):
+        if isinstance(result,list):
             res=result[0]
         else:
             res=result
 
 
-        st.success("分析完成")
-
-
-        st.write(
-            "年齡:",
-            res["age"]
+        st.success(
+            "分析完成"
         )
 
+
         st.write(
-            "性別:",
-            res["dominant_gender"]
+            "👶 年齡:",
+            res.get("age")
+        )
+
+
+        st.write(
+            "🚻 性別:",
+            res.get(
+                "dominant_gender",
+                res.get("gender")
+            )
+        )
+
+
+        st.write(
+            "😀 情緒:",
+            res.get(
+                "dominant_emotion"
+            )
         )
 
         st.write(
