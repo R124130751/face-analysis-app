@@ -1,7 +1,7 @@
 streamlit
+gradio
 tensorflow
 deepface
 mediapipe
 tf-keras
-opencv-python-headless==4.10.0.84
---extra-index-url https://pypi.org/simple
+opencv-python-headless
