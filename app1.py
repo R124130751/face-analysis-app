@@ -1,3 +1,7 @@
+import os
+os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "0"
+os.environ["QT_QPA_PLATFORM"] = "offscreen"
+
 from deepface import DeepFace
 import gradio as gr
 
