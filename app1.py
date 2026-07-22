@@ -1,42 +1,66 @@
-import os
-os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "0"
-os.environ["QT_QPA_PLATFORM"] = "offscreen"
-
+import streamlit as st
 from deepface import DeepFace
-import gradio as gr
+import cv2
+import numpy as np
 
 
-def analyze_face(image):
-    if image is None:
-        return "請先上傳照片！"
+st.title("👤 AI 人臉分析系統")
 
-    try:
-        results = DeepFace.analyze(
-            img_path=image,
-            actions=['age', 'gender', 'emotion', 'race'],
-            detector_backend='mediapipe',
+
+uploaded_file = st.file_uploader(
+    "上傳照片",
+    type=["jpg","png","jpeg"]
+)
+
+
+if uploaded_file:
+
+    img = np.array(
+        bytearray(uploaded_file.read()),
+        dtype=np.uint8
+    )
+
+    img = cv2.imdecode(
+        img,
+        cv2.IMREAD_COLOR
+    )
+
+
+    st.image(
+        img,
+        channels="BGR"
+    )
+
+
+    if st.button("開始分析"):
+
+        result = DeepFace.analyze(
+            img,
+            actions=[
+                "age",
+                "gender",
+                "emotion",
+                "race"
+            ],
+            detector_backend="mediapipe",
             enforce_detection=False,
         )
 
-        res = results[0]
 
-        return f"""
-        ### 📊 分析結果：
-        * **推定年齡**：{res.get('age', '未知')} 歲
-        * **性別**：{res.get('dominant_gender', '未知')}
-        * **主要情緒**：{res.get('dominant_emotion', '未知')}
-        * **種族/族群**：{res.get('dominant_race', '未知')}
-        """
-    except Exception as e:
-        return f"❌ 分析失敗：{str(e)}"
+        res=result[0]
 
 
-demo = gr.Interface(
-    fn=analyze_face,
-    inputs=gr.Image(type="numpy", label="上傳照片"),
-    outputs=gr.Markdown(label="分析結果"),
-    title="👤 AI 人臉分析系統",
-)
+        st.write(
+            "年齡:",
+            res["age"]
+        )
 
-if __name__ == "__main__":
-    demo.launch()
+        st.write(
+            "性別:",
+            res["dominant_gender"]
+        )
+
+        st.write(
+            "情緒:",
+            res["dominant_emotion"]
+        )
