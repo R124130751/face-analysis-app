@@ -1,0 +1,5 @@
+streamlit
+deepface
+mediapipe
+tf-keras
+opencv-python-headless
