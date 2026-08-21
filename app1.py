@@ -1,95 +1,44 @@
-import streamlit as st
-import cv2
-import numpy as np
+import os
+os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "0"
+os.environ["QT_QPA_PLATFORM"] = "offscreen"
+
 from deepface import DeepFace
+import gradio as gr
+from deepface import DeepFace
+import gradio as gr
 
 
-st.title("👤 AI 人臉分析系統")
+def analyze_face(image):
+    if image is None:
+        return "請先上傳照片！"
+
+    try:
+        results = DeepFace.analyze(
+            img_path=image,
+            actions=['age', 'gender', 'emotion', 'race'],
+            detector_backend='mediapipe',
+            enforce_detection=False,
+        )
+
+        res = results[0]
+
+        return f"""
+        ### 📊 分析結果：
+        * **推定年齡**：{res.get('age', '未知')} 歲
+        * **性別**：{res.get('dominant_gender', '未知')}
+        * **主要情緒**：{res.get('dominant_emotion', '未知')}
+        * **種族/族群**：{res.get('dominant_race', '未知')}
+        """
+    except Exception as e:
+        return f"❌ 分析失敗：{str(e)}"
 
 
-uploaded_file = st.file_uploader(
-    "上傳照片",
-    type=["jpg","png","jpeg"]
+demo = gr.Interface(
+    fn=analyze_face,
+    inputs=gr.Image(type="numpy", label="上傳照片"),
+    outputs=gr.Markdown(label="分析結果"),
+    title="👤 AI 人臉分析系統",
 )
 
-
-if uploaded_file:
-
-    bytes_data = uploaded_file.read()
-
-
-    img = np.frombuffer(
-        bytes_data,
-        np.uint8
-    )
-
-
-    img = cv2.imdecode(
-        img,
-        cv2.IMREAD_COLOR
-    )
-
-
-    st.image(
-        img,
-        channels="BGR"
-    )
-
-
-    if st.button("開始分析"):
-
-
-        with st.spinner(
-            "AI分析中..."
-        ):
-
-
-            result = DeepFace.analyze(
-                img_path=img,
-                actions=[
-                    "age",
-                    "gender",
-                    "emotion"
-                ],
-                detector_backend="retinaface",
-                enforce_detection=False
-            )
-
-
-        if isinstance(result,list):
-            res=result[0]
-        else:
-            res=result
-
-
-        st.success(
-            "分析完成"
-        )
-
-
-        st.write(
-            "👶 年齡:",
-            res.get("age")
-        )
-
-
-        st.write(
-            "🚻 性別:",
-            res.get(
-                "dominant_gender",
-                res.get("gender")
-            )
-        )
-
-
-        st.write(
-            "😀 情緒:",
-            res.get(
-                "dominant_emotion"
-            )
-        )
-
-        st.write(
-            "情緒:",
-            res["dominant_emotion"]
-        )
+if __name__ == "__main__":
+    demo.launch()
